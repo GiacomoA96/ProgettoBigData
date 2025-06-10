@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable, Text> {
-    private Map<String, String[]> tickerInfo = new HashMap<>();
+    private Map<String, String> tickerToSector = new HashMap<>();
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -23,8 +23,8 @@ public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable
                 String[] parts = line.split(",", -1);
                 if (parts.length >= 5) {
                     String ticker = parts[0];
-                    // Salva tutte le info aziendali tranne il ticker
-                    tickerInfo.put(ticker, new String[]{parts[1], parts[2], parts[3], parts[4]});
+                    String sector = parts[3];
+                    tickerToSector.put(ticker, sector);
                 }
             }
             reader.close();
@@ -38,12 +38,15 @@ public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable
         if (line.startsWith("ticker,")) return;
         String[] parts = line.split(",", -1);
         if (parts.length >= 8) {
-            String ticker = parts[1];
-            String[] info = tickerInfo.get(ticker);
-            if (info != null) {
-                // Unisci le informazioni: prezzi storici + info aziendali
-                String joined = String.join(",", parts) + "," + String.join(",", info);
-                context.write(NullWritable.get(), new Text(joined));
+            String ticker = parts[0];
+            String close = parts[2];
+            String volume = parts[6];
+            String date = parts[7];
+            String sector = tickerToSector.get(ticker);
+            if (sector != null) {
+                // Scrivi solo le colonne di interesse
+                String output = String.join(",", ticker, date, close, volume, sector);
+                context.write(NullWritable.get(), new Text(output));
             }
         }
     }
