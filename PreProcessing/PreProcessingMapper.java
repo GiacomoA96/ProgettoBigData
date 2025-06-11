@@ -9,7 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable, Text> {
-    private Map<String, String> tickerToSector = new HashMap<>();
+    // Mappa: ticker -> [nome, settore]
+    private Map<String, String[]> tickerInfo = new HashMap<>();
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -23,8 +24,9 @@ public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable
                 String[] parts = line.split(",", -1);
                 if (parts.length >= 5) {
                     String ticker = parts[0];
+                    String name = parts[1];
                     String sector = parts[3];
-                    tickerToSector.put(ticker, sector);
+                    tickerInfo.put(ticker, new String[]{name, sector});
                 }
             }
             reader.close();
@@ -42,10 +44,12 @@ public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable
             String close = parts[2];
             String volume = parts[6];
             String date = parts[7];
-            String sector = tickerToSector.get(ticker);
-            if (sector != null) {
-                // Scrivi solo le colonne di interesse
-                String output = String.join(",", ticker, date, close, volume, sector);
+            String[] info = tickerInfo.get(ticker);
+            if (info != null) {
+                String name = info[0];
+                String sector = info[1];
+                // Scrivi: ticker, name, date, close, volume, sector
+                String output = String.join(",", ticker, name, date, close, volume, sector);
                 context.write(NullWritable.get(), new Text(output));
             }
         }
