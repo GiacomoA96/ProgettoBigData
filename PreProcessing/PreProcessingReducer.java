@@ -1,4 +1,4 @@
-package PreProcessing;
+package stockanalisis.preprocessing;
 
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Reducer;

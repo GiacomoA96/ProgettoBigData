@@ -1,4 +1,4 @@
-package PreProcessing;
+package stockanalisis.preprocessing;
 
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -24,7 +24,7 @@ public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable
                 String[] parts = line.split(",", -1);
                 if (parts.length >= 5) {
                     String ticker = parts[0];
-                    String name = parts[1];
+                    String name = parts[2];
                     String sector = parts[3];
                     tickerInfo.put(ticker, new String[]{name, sector});
                 }
@@ -35,7 +35,8 @@ public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable
 
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-        // header: ticker,open,close,low,high,volume,date
+        //Andiamo a leggere gli input del file CSV che avrà come header:
+        // ticker,name,open,close,low,high,volume,date
         String line = value.toString();
         if (line.startsWith("ticker,")) return;
         String[] parts = line.split(",", -1);
@@ -48,9 +49,12 @@ public class PreprocessingMapper extends Mapper<LongWritable, Text, NullWritable
             if (info != null) {
                 String name = info[0];
                 String sector = info[1];
-                // Scrivi: ticker, name, date, close, volume, sector
-                String output = String.join(",", ticker, name, date, close, volume, sector);
-                context.write(NullWritable.get(), new Text(output));
+                // in questo modo possiamo creare un output che contiene il ticker, il nome, la data, il prezzo di chiusura, il volume e il settore
+                if(!ticker.isEmpty() && !name.isEmpty() && !date.isEmpty() && !close.isEmpty() && !volume.isEmpty() && !sector.isEmpty()) {
+                    // Viene creata una stringa di output con i campi richiesti
+                    String output = String.join(",", ticker, name, date, close, volume, sector);
+                    context.write(new Text(ticker), new Text(output)); // Utilizziamo ticker come chiave
+                }
             }
         }
     }

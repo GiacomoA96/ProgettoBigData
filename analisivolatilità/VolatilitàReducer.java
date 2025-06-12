@@ -1,4 +1,4 @@
-package analisivolatilità;
+package stockanalisis.volatilita;
 
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VolatilitàReducer extends Reducer<Text, DoubleWritable, Text, Text> {
+public class VolatilitaReducer extends Reducer<Text, DoubleWritable, Text, Text> {
     @Override
     protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
         List<Double> closes = new ArrayList<>();

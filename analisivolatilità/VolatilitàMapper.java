@@ -1,11 +1,11 @@
-package analisivolatilità;
+package stockanalisis.volatilita;
 
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
 
-public class VolatilitàMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
+public class VolatilitaMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         // header: ticker,date,close,volume,sector
